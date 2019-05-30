@@ -12,6 +12,7 @@ https://discord.gg/pC5Dmqg
 2. Download or clone this repository
 3. In the files from the previous step, find and double click on run.bat
 4. Click the 'Run' button
+5. Go to your steam and click 'OK' to launch rocket league into the game
 
 ## Creating your own
 
