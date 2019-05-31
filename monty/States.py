@@ -2,7 +2,30 @@ import math
 import time
 from rlbot.agents.base_agent import  SimpleControllerState
 from Util import *
+from enum import Enum, auto
 
+
+class kickoff:
+    def __init__(self):
+        self.expired = False
+    def available(self, agent):
+        if agent.me.isRoundActive == False:
+            return True
+        return False
+    def execute(self, agent):
+        agent.controller = kickoffController
+
+        if agent.ball.location.data[0] != 0 and agent.ball.location.data[1] != 0:
+            self.expired = True
+        return agent.controller(agent)
+        
+def kickoffController(agent):
+    controller_state = SimpleControllerState()
+    localBall = toLocal(agent.ball, agent.me)
+    controller_state.throttle = 1
+    flipCar(agent, controller_state, flipDirection.FORWARD)
+
+    return controller_state
 
 class towardball:
     def __init__(self):
@@ -33,23 +56,7 @@ def towardballController(agent, target_object,target_speed):
     elif target_speed < current_speed:
         controller_state.throttle = 0
 
-    #dodging
-    time_difference = time.time() - agent.start
-    if time_difference > 2.2 and distance2D(target_object,agent.me) > (velocity2D(agent.me)*2.5) and abs(angle_to_ball) < 1.3:
-        agent.start = time.time()
-    elif time_difference <= 0.1:
-        controller_state.jump = True
-        controller_state.pitch = -1
-    elif time_difference >= 0.1 and time_difference <= 0.15:
-        controller_state.jump = False
-        controller_state.pitch = -1
-    elif time_difference > 0.15 and time_difference < 1:
-        controller_state.jump = True
-        controller_state.yaw = controller_state.steer
-        controller_state.pitch = -1
-
     return controller_state
-
 
 class wait():
     def __init__(self):
@@ -58,31 +65,8 @@ class wait():
         if timeZ(agent.ball) > 2:
             return True
     def execute(self,agent):
-        #taking a rough guess at where the ball will be in the future, based on how long it will take to hit the ground
-        ball_future = future(agent.ball, timeZ(agent.ball))
-        if agent.me.boost < 35: #if we are low on boost, we'll go for boot
-            closest = 0
-            closest_distance =  distance2D(boosts[0], ball_future) 
+        
+        self.expired = True
+        controller_state = SimpleControllerState()
 
-            #going through every large pad to see which one is closest to our ball_future guesstimation
-            for i in range(1,len(boosts)):
-                if distance2D(boosts[i], ball_future) < closest_distance:
-                    closest = i
-                    closest_distance =  distance2D(boosts[i], ball_future)
-
-            target = boosts[closest]
-            speed = 2300
-        else:
-            #if we have boost, we just go towards the ball_future position, and slow down just like in exampleATBA as we get close
-            target = ball_future
-            current = velocity2D(agent.me)
-            ratio = distance2D(agent.me,target)/(current + 0.01)
-            
-            speed = cap(600 * ratio,0,2300)
-        if speed <= 100:
-            speed = 0
-
-        if agent.ball.location.data[2] < 170:
-            self.expired = True
-
-        return frugalController(agent,target,speed)
+        return controller_state

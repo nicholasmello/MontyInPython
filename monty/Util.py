@@ -1,8 +1,12 @@
 import math
+import time
+from enum import Enum, auto
 
 GOAL_WIDTH = 1900
 FIELD_LENGTH = 10280
 FIELD_WIDTH = 8240
+
+CURRENT_STATE = "Unset"
 
 boosts = [
     [3584, 0,0],
@@ -160,3 +164,49 @@ def distance2D(target_object, our_object):
     difference = toLocation(target_object) - toLocation(our_object)
     return math.sqrt(difference.data[0]**2 + difference.data[1]**2)
 
+def changeBotState(new):
+    global CURRENT_STATE
+    if new != CURRENT_STATE:
+        print("State Change: " + new)
+        CURRENT_STATE = new
+
+class flipDirection(Enum):
+    DOUBLE_JUMP = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+    RIGHT = auto()
+    LEFT = auto()
+    def flipd(self, controller_state):
+        if self.name == "DOUBLE_JUMP":
+            controller_state.pitch = 0
+            controller_state.yaw = 0
+        elif self.name == "FORWARD":
+            controller_state.pitch = -1
+            controller_state.yaw = 0
+        elif self.name == "BACKWARD":
+            controller_state.pitch = 1
+            controller_state.yaw = 0
+        elif self.name == "RIGHT":
+            controller_state.yaw = 1
+            controller_state.pitch = 0
+        elif self.name == "LEFT":
+            controller_state.yaw = -1
+            controller_state.pitch = 0
+        return controller_state
+        
+
+def flipCar(agent, controller_state, direction):
+    if agent.me.isRoundActive == True:
+        diff = time.time() - agent.start
+    else:
+        agent.start = time.time()
+        diff = 0.125
+    if diff <= 0.1:
+        controller_state.jump = True
+    elif diff >= 0.1 and diff <= 0.15:
+        controller_state.jump = False
+    elif diff > 0.15 and diff < 1:
+        controller_state.jump = True
+    controller_state = direction.flipd(controller_state)
+    #print(str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw) + " " + str(diff))
+    return controller_state

@@ -16,17 +16,24 @@ class Monty(BaseAgent):
         self.players = [] #holds other players in match
         self.start = time.time()
 
-        self.state = towardball()
-        self.controller = towardballController
+        self.state = kickoff()
+        changeBotState("kickoff")
+        self.controller = kickoffController
 
     def checkState(self):
         if self.state.expired:
-            if towardball().available(self) == True:
+            if kickoff().available(self) == True:
+                self.state = kickoff()
+                changeBotState("Kickoff")
+            elif towardball().available(self) == True:
                 self.state = towardball()
+                changeBotState("Toward Ball")
             elif wait().available(self) == True:
                 self.state = wait()
+                changeBotState("Wait")
             else:
                 self.state = wait()
+                changeBotState("Wait")
     
 
     def get_output(self, game: GameTickPacket) -> SimpleControllerState:
@@ -41,6 +48,7 @@ class Monty(BaseAgent):
         self.me.velocity.data = [car.physics.velocity.x, car.physics.velocity.y, car.physics.velocity.z]
         self.me.rotation.data = [car.physics.rotation.pitch, car.physics.rotation.yaw, car.physics.rotation.roll]
         self.me.rvelocity.data = [car.physics.angular_velocity.x, car.physics.angular_velocity.y, car.physics.angular_velocity.z]
+        self.me.isRoundActive = game.game_info.is_round_active
         self.me.matrix = rotator_to_matrix(self.me)
         self.me.boost = car.boost
 
@@ -72,4 +80,11 @@ class Monty(BaseAgent):
                         break
                 if not flag:
                     self.players.append(temp)
+
+                
+
+            
+                
+
+                
 
