@@ -7,6 +7,8 @@ FIELD_LENGTH = 10280
 FIELD_WIDTH = 8240
 
 CURRENT_STATE = "Unset"
+FLIP_CAR_CALLED = False
+FLIP_CAR_START = 0
 
 boosts = [
     [3584, 0,0],
@@ -170,6 +172,12 @@ def changeBotState(new):
         print("State Change: " + new)
         CURRENT_STATE = new
 
+def resetGlobalVariables():
+    global FLIP_CAR_CALLED
+    global FLIP_CAR_START
+    FLIP_CAR_CALLED = False
+    FLIP_CAR_START = 0
+
 class flipDirection(Enum):
     DOUBLE_JUMP = auto()
     FORWARD = auto()
@@ -194,19 +202,22 @@ class flipDirection(Enum):
             controller_state.pitch = 0
         return controller_state
         
-
 def flipCar(agent, controller_state, direction):
-    if agent.me.isRoundActive == True:
-        diff = time.time() - agent.start
-    else:
-        agent.start = time.time()
-        diff = 0.125
+    global FLIP_CAR_CALLED
+    global FLIP_CAR_START
+    if FLIP_CAR_CALLED == False:
+        FLIP_CAR_START = time.time() - agent.start
+    FLIP_CAR_CALLED = True
+    diff = (time.time() - agent.start) - FLIP_CAR_START
+
     if diff <= 0.1:
         controller_state.jump = True
     elif diff >= 0.1 and diff <= 0.15:
         controller_state.jump = False
     elif diff > 0.15 and diff < 1:
         controller_state.jump = True
+    else:
+        FLIP_CAR_CALLED = False
     controller_state = direction.flipd(controller_state)
-    #print(str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw) + " " + str(diff))
+    print(str(diff) + " " + str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw))
     return controller_state

@@ -22,15 +22,13 @@ class Monty(BaseAgent):
 
     def checkState(self):
         if self.state.expired:
+            resetGlobalVariables()
             if kickoff().available(self) == True:
                 self.state = kickoff()
                 changeBotState("Kickoff")
             elif towardball().available(self) == True:
                 self.state = towardball()
                 changeBotState("Toward Ball")
-            elif wait().available(self) == True:
-                self.state = wait()
-                changeBotState("Wait")
             else:
                 self.state = wait()
                 changeBotState("Wait")

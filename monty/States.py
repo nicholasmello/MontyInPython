@@ -16,16 +16,23 @@ class kickoff:
         agent.controller = kickoffController
 
         if agent.ball.location.data[0] != 0 and agent.ball.location.data[1] != 0:
+            global FLIP_CAR_CALLED
+            FLIP_CAR_CALLED = False
             self.expired = True # <-- Expired condition is when the ball is no longer in the center of the field for the first time after the round becomes active
         return agent.controller(agent)
         
 def kickoffController(agent):
     controller_state = SimpleControllerState()
-    localBall = toLocal(agent.ball, agent.me) # <-- Currently unused. Will be used later.
+    localBall = toLocal(agent.ball, agent.me)
+    ballDistance = math.sqrt((localBall.data[0])**2+(localBall.data[1])**2)
     controller_state.throttle = 1 # <-- Drive Forward.
-    
-    flipCar(agent, controller_state, flipDirection.FORWARD) # <-- Flip the car in the forward direction.
-    ''' Rest of kickoff will go here. '''
+    controller_state.boost = 1
+    angle_to_ball = math.atan2(localBall.data[1], localBall.data[0])
+    controller_state.steer = steer(angle_to_ball) 
+    if ballDistance < 900:
+        controller_state.boost = 0
+        controller_state = flipCar(agent, controller_state, flipDirection.FORWARD) # <-- Flip the car in the forward direction.
+
     return controller_state
 
 ''' TOWARD BALL STATE '''
