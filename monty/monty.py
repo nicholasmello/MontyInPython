@@ -26,6 +26,9 @@ class Monty(BaseAgent):
             if kickoff().available(self) == True:
                 self.state = kickoff()
                 changeBotState("Kickoff")
+            elif retreat().available(self) == True:
+                self.state = retreat()
+                changeBotState("Retreat")
             elif towardball().available(self) == True:
                 self.state = towardball()
                 changeBotState("Toward Ball")
@@ -49,6 +52,7 @@ class Monty(BaseAgent):
         self.me.isRoundActive = game.game_info.is_round_active
         self.me.matrix = rotator_to_matrix(self.me)
         self.me.boost = car.boost
+        self.me.team = (game.game_cars[self.index].team - .5)*2 #-1 is blue, 1 is orange
 
         ball = game.game_ball.physics
         self.ball.location.data = [ball.location.x, ball.location.y, ball.location.z]

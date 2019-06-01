@@ -35,6 +35,31 @@ def kickoffController(agent):
 
     return controller_state
 
+''' RETREAT STATE '''
+class retreat:
+    def __init__(self):
+        self.expired = False
+    def available(self,agent):
+        if teamify(agent.me.location.data[1], agent) > (agent.ball.location.data[1] + teamify(600, agent)):
+            return True
+        else:
+            return False
+    def execute(self,agent):
+        agent.controller = retreatController
+        target_location = Vector3([0,teamify(-4500, agent),0])
+        if teamify(agent.me.location.data[1], agent) < teamify(-2500,agent):
+            self.expired = True
+        return agent.controller(agent, target_location)
+
+def retreatController(agent, goal):
+    location = toLocal(goal,agent.me)
+    controller_state = SimpleControllerState()
+    angle_to_goal = math.atan2(location.data[1],location.data[0])
+    controller_state.steer = steer(angle_to_goal)
+    controller_state.throttle = 1
+
+    return controller_state
+
 ''' TOWARD BALL STATE '''
 class towardball:
     def __init__(self):
@@ -51,19 +76,31 @@ class towardball:
 def towardballController(agent, target_object,target_speed):
     location = toLocal(target_object,agent.me)
     controller_state = SimpleControllerState()
-    angle_to_ball = math.atan2(location.data[1],location.data[0])
 
     current_speed = velocity2D(agent.me)
-    #steering
-    controller_state.steer = steer(angle_to_ball)
 
     #throttle
     if target_speed > current_speed:
         controller_state.throttle = 1.0
+        if agent.ball.location.data[0] > 50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+            location.data[0] = location.data[0] + 200
+        elif agent.ball.location.data[0] < -50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+            location.data[0] = location.data[0] - 200
         if target_speed > 1400 and agent.start > 2.2 and current_speed < 2250:
+            if agent.ball.location.data[0] > 50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+                location.data[0] = location.data[0] + 300
+            elif agent.ball.location.data[0] < -50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+                location.data[0] = location.data[0] - 300
             controller_state.boost = True
     elif target_speed < current_speed:
         controller_state.throttle = 0
+        if agent.ball.location.data[0] > 50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+            location.data[0] = location.data[0] + 150
+        elif agent.ball.location.data[0] < -50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
+            location.data[0] = location.data[0] - 150
+
+    angle_to_ball = math.atan2(location.data[1],location.data[0])
+    controller_state.steer = steer(angle_to_ball)
 
     return controller_state
 

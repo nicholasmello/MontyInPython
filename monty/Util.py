@@ -219,5 +219,8 @@ def flipCar(agent, controller_state, direction):
     else:
         FLIP_CAR_CALLED = False
     controller_state = direction.flipd(controller_state)
-    print(str(diff) + " " + str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw))
+    #print(str(diff) + " " + str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw))
     return controller_state
+
+def teamify(y,agent):
+    return y * agent.me.team * -1
