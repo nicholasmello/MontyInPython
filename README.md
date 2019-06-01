@@ -26,5 +26,4 @@ https://www.rlbot.org/
 
 ## Progression
 ### Here are some videos of the bot progressing
-#### Video 1
-https://youtu.be/roexTM3MOTs
+#### [Video 1](https://youtu.be/roexTM3MOTs)
