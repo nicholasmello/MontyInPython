@@ -35,30 +35,51 @@ def kickoffController(agent):
 
     return controller_state
 
-''' RETREAT STATE '''
-class retreat:
+
+''' TOWARD BALL STATE '''
+class towardball:
     def __init__(self):
         self.expired = False
     def available(self,agent):
-        if teamify(agent.me.location.data[1], agent) > (agent.ball.location.data[1] + teamify(600, agent)):
-            return True
-        else:
-            return False
+        return True
     def execute(self,agent):
-        agent.controller = retreatController
-        target_location = Vector3([0,teamify(-4500, agent),0])
-        if teamify(agent.me.location.data[1], agent) < teamify(-2500,agent):
+        agent.controller = towardballController
+        if agent.me.istouching == False:
             self.expired = True
-        return agent.controller(agent, target_location)
+        return agent.controller(agent)
 
-def retreatController(agent, goal):
-    location = toLocal(goal,agent.me)
+def towardballController(agent):
     controller_state = SimpleControllerState()
-    angle_to_goal = math.atan2(location.data[1],location.data[0])
-    controller_state.steer = steer(angle_to_goal)
+
     controller_state.throttle = 1
 
     return controller_state
+
+
+''' FALLING STATE '''
+class falling:
+    def __init__(self):
+        self.expired = False
+    def available(self,agent):
+        if agent.me.istouching:
+            return False
+        else:
+            return True
+    def execute(self,agent):
+        agent.controller = fallingController
+        if agent.me.istouching:
+            self.expired = True
+        return agent.controller(agent)
+
+def fallingController(agent):
+    controller_state = SimpleControllerState()
+    controller_state.throttle = 1
+    if agent.me.rotation.data[2] > .1:
+        controller_state.roll = -1
+    if agent.me.rotation.data[2] < -.1:
+        controller_state.roll = 1
+    return controller_state
+
 
 ''' TOWARD BALL STATE '''
 class towardball:

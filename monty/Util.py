@@ -184,22 +184,38 @@ class flipDirection(Enum):
     BACKWARD = auto()
     RIGHT = auto()
     LEFT = auto()
+    FRONT_RIGHT = auto()
+    FRONT_LEFT = auto()
+    BACK_RIGHT = auto()
+    BACK_LEFT = auto()
     def flipd(self, controller_state):
         if self.name == "DOUBLE_JUMP":
             controller_state.pitch = 0
             controller_state.yaw = 0
-        elif self.name == "FORWARD":
+        elif self.name == "FORWARD": # Forward pitch -1
             controller_state.pitch = -1
             controller_state.yaw = 0
-        elif self.name == "BACKWARD":
+        elif self.name == "BACKWARD": # Backward pitch 1
             controller_state.pitch = 1
             controller_state.yaw = 0
-        elif self.name == "RIGHT":
+        elif self.name == "RIGHT": # Right yaw 1
+            controller_state.pitch = 0
             controller_state.yaw = 1
+        elif self.name == "LEFT": # Left yaw -1
             controller_state.pitch = 0
-        elif self.name == "LEFT":
             controller_state.yaw = -1
-            controller_state.pitch = 0
+        elif self.name == "FRONT_RIGHT":
+            controller_state.pitch = -1
+            controller_state.yaw = 1
+        elif self.name == "FRONT_LEFT":
+            controller_state.pitch = -1
+            controller_state.yaw = -1
+        elif self.name == "BACK_RIGHT":
+            controller_state.pitch = 1
+            controller_state.yaw = 1
+        elif self.name == "BACK_LEFT":
+            controller_state.pitch = 1
+            controller_state.yaw = -1
         return controller_state
         
 def flipCar(agent, controller_state, direction):

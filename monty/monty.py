@@ -26,6 +26,9 @@ class Monty(BaseAgent):
             if kickoff().available(self) == True:
                 self.state = kickoff()
                 changeBotState("Kickoff")
+            elif falling().available(self) == True:
+                self.state = falling()
+                changeBotState("Falling")
             elif retreat().available(self) == True:
                 self.state = retreat()
                 changeBotState("Retreat")
@@ -49,6 +52,7 @@ class Monty(BaseAgent):
         self.me.velocity.data = [car.physics.velocity.x, car.physics.velocity.y, car.physics.velocity.z]
         self.me.rotation.data = [car.physics.rotation.pitch, car.physics.rotation.yaw, car.physics.rotation.roll]
         self.me.rvelocity.data = [car.physics.angular_velocity.x, car.physics.angular_velocity.y, car.physics.angular_velocity.z]
+        self.me.istouching = game.game_cars[self.index].has_wheel_contact
         self.me.isRoundActive = game.game_info.is_round_active
         self.me.matrix = rotator_to_matrix(self.me)
         self.me.boost = car.boost
