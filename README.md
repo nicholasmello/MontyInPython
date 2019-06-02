@@ -28,3 +28,4 @@ https://www.rlbot.org/
 ### Here are some videos of the bot progressing
 #### [Video 1](https://youtu.be/roexTM3MOTs)
 #### [Video 2](https://youtu.be/uWBswcXXAT8)
+#### [Video 3](https://youtu.be/9nkdmIKhITI)
