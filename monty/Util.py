@@ -230,13 +230,27 @@ def flipCar(agent, controller_state, direction):
         controller_state.jump = True
     elif diff >= 0.1 and diff <= 0.15:
         controller_state.jump = False
+        controller_state.boost = 0
     elif diff > 0.15 and diff < 1:
         controller_state.jump = True
+        controller_state.boost = 0
     else:
         FLIP_CAR_CALLED = False
     controller_state = direction.flipd(controller_state)
     #print(str(diff) + " " + str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw))
     return controller_state
+
+def chooseflip(localAngle):
+    if localAngle <= .3 and -.3 <= localAngle:
+        return flipDirection.FORWARD
+    elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
+        return flipDirection.RIGHT
+    elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
+        return flipDirection.LEFT
+    elif localAngle <= 1.14 and .3 <= localAngle:
+        return flipDirection.FRONT_RIGHT
+    elif localAngle <= -.3 and -1.14 <= localAngle:
+        return flipDirection.FRONT_LEFT
 
 def teamify(y,agent):
     return y * agent.me.team * -1
