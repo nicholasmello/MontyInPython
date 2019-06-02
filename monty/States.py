@@ -36,23 +36,51 @@ def kickoffController(agent):
     return controller_state
 
 
-''' TOWARD BALL STATE '''
-class towardball:
+''' DEFENSIVE CORNER STATE '''
+class defensiveCorner:
     def __init__(self):
         self.expired = False
     def available(self,agent):
-        return True
+        if abs(agent.ball.location.data[0]) < 4120 and abs(agent.ball.location.data[0]) > 1300 and agent.ball.location.data[1] < teamify(-2250, agent):
+            return True
+        else:
+            return False
     def execute(self,agent):
-        agent.controller = towardballController
-        if agent.me.istouching == False:
+        agent.controller = defensiveCornerController
+        if abs(agent.ball.location.data[0]) < 4120 and abs(agent.ball.location.data[0]) > 1300 and agent.ball.location.data[1] < teamify(-2250, agent):
+            self.expired = False
+        else:
             self.expired = True
         return agent.controller(agent)
 
-def towardballController(agent):
+def defensiveCornerController(agent):
     controller_state = SimpleControllerState()
-
-    controller_state.throttle = 1
-
+    localBall = toLocal(agent.ball, agent.me)
+    ballDistance = math.sqrt((localBall.data[0])**2+(localBall.data[1])**2)
+    localAngle = math.atan2(localBall.data[1], localBall.data[0])
+    controller_state.throttle = abs(abs(localAngle)-1) / math.pi
+    if teamify(agent.me.location.data[1], agent) < teamify(-5140, agent):
+        controller_state.throttle = .15
+        steer(math.atan2(teamify(-5100, agent), 0))
+    if abs(agent.me.location.data[0]) < abs(agent.ball.location.data[0]) and teamify(agent.me.location.data[1], agent) < teamify(agent.ball.location.data[1], agent):
+        inPosition = True
+    else:
+        inPosition = False
+    if inPosition == True:
+        controller_state.steer = steer(localAngle)
+        if ballDistance < 500:
+            if localAngle <= .3 and -.3 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+            elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT)
+            elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.LEFT)
+            elif localAngle <= 1.14 and .3 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT)
+            elif localAngle <= -.3 and -1.14 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT)
+    else:
+        controller_state = retreatController(agent, Vector3([0,teamify(-4500, agent),0]))
     return controller_state
 
 
@@ -81,6 +109,35 @@ def fallingController(agent):
     return controller_state
 
 
+''' RETREAT STATE '''
+class retreat:
+    def __init__(self):
+        self.expired = False
+    def available(self,agent):
+        if teamify(agent.me.location.data[1], agent) > (agent.ball.location.data[1] + teamify(600, agent)):
+            return True
+        else:
+            return False
+    def execute(self,agent):
+        agent.controller = retreatController
+        target_location = Vector3([0,teamify(-4500, agent),0])
+        if teamify(agent.me.location.data[1], agent) < teamify(-2500,agent):
+            self.expired = True
+        return agent.controller(agent, target_location)
+
+def retreatController(agent, goal):
+    location = toLocal(goal,agent.me)
+    controller_state = SimpleControllerState()
+    angle_to_goal = math.atan2(location.data[1],location.data[0])
+    controller_state.steer = steer(angle_to_goal)
+    controller_state.throttle = 1
+    if angle_to_goal <= .3 and -.3 <= angle_to_goal:
+        controller_state.boost = 1
+    else:
+        controller_state.boost = 0
+
+    return controller_state
+
 ''' TOWARD BALL STATE '''
 class towardball:
     def __init__(self):
@@ -97,7 +154,7 @@ class towardball:
 def towardballController(agent, target_object,target_speed):
     location = toLocal(target_object,agent.me)
     controller_state = SimpleControllerState()
-
+    ballDistance = math.sqrt((location.data[0])**2+(location.data[1])**2)
     current_speed = velocity2D(agent.me)
 
     #throttle
@@ -120,8 +177,8 @@ def towardballController(agent, target_object,target_speed):
         elif agent.ball.location.data[0] < -50 and teamify(agent.me.location.data[1], agent) > agent.ball.location.data[1]:
             location.data[0] = location.data[0] - 150
 
-    angle_to_ball = math.atan2(location.data[1],location.data[0])
-    controller_state.steer = steer(angle_to_ball)
+    localAngle = math.atan2(location.data[1],location.data[0])
+    controller_state.steer = steer(localAngle)
 
     return controller_state
 
@@ -138,3 +195,18 @@ class wait():
         controller_state = SimpleControllerState()
         print("Error: All states bypassed to wait state.")
         return controller_state
+
+
+'''
+if ballDistance < 500:
+    if localAngle <= .3 and -.3 <= localAngle:
+        controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+    elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
+        controller_state = flipCar(agent, controller_state, flipDirection.RIGHT)
+    elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
+        controller_state = flipCar(agent, controller_state, flipDirection.LEFT)
+    elif localAngle <= 1.14 and .3 <= localAngle:
+        controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT)
+    elif localAngle <= -.3 and -1.14 <= localAngle:
+        controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT)
+'''

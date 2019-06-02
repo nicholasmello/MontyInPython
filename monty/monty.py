@@ -29,6 +29,9 @@ class Monty(BaseAgent):
             elif falling().available(self) == True:
                 self.state = falling()
                 changeBotState("Falling")
+            elif defensiveCorner().available(self) == True:
+                self.state = defensiveCorner()
+                changeBotState("Defensive Corner")
             elif retreat().available(self) == True:
                 self.state = retreat()
                 changeBotState("Retreat")
