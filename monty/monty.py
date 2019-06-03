@@ -29,9 +29,12 @@ class Monty(BaseAgent):
             elif falling().available(self) == True:
                 self.state = falling()
                 changeBotState("Falling")
-            elif flipAttack().available(self) == True:
-                self.state = flipAttack()
-                changeBotState("Flip Attack")
+            elif offensiveCorner().available(self) == True:
+                self.state = offensiveCorner()
+                changeBotState("Offensive Corner")
+            elif centerAttack().available(self) == True:
+                self.state = centerAttack()
+                changeBotState("Center Attack")
             elif defensiveCorner().available(self) == True:
                 self.state = defensiveCorner()
                 changeBotState("Defensive Corner")
@@ -71,6 +74,8 @@ class Monty(BaseAgent):
         self.ball.rvelocity.data = [ball.angular_velocity.x, ball.angular_velocity.y, ball.angular_velocity.z]
 
         self.ball.local_location = to_local(self.ball,self.me)
+
+        self.ball.ball_prediction = self.get_ball_prediction_struct()
 
         #collects info for all other cars in match, updates objects in self.players accordingly
         for i in range(game.num_cars):

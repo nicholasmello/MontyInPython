@@ -56,8 +56,41 @@ def fallingController(agent):
     return controller_state
 
 
+''' OFFENSIVE CORNER STATE '''
+class offensiveCorner:
+    def __init__(self):
+        self.expired = False
+    def available(self, agent):
+        if abs(agent.ball.location.data[0]) < 4120 and abs(agent.ball.location.data[0]) > 2400 and agent.ball.location.data[1] > teamify(2000, agent):
+            return True
+        return False
+    def execute(self, agent):
+        agent.controller = offensiveCornerController
+        if agent.ball.location.data[0] >= 0:
+            midField = Vector3([2000,teamify(200, agent),0])
+        else:
+            midField = Vector3([-2000,teamify(200, agent),0])
+        if abs(agent.ball.location.data[0]) < 2000 or agent.ball.location.data[1] > teamify(2250, agent):
+            self.expired = True
+        return agent.controller(agent, midField)
+
+def offensiveCornerController(agent, mid):
+    controller_state = SimpleControllerState()
+    localMid = toLocal(mid, agent.me)
+    localAngle = math.atan2(localMid.data[1], localMid.data[0])
+    localDistance = math.sqrt((localMid.data[0])**2+(localMid.data[1])**2)
+    controller_state.steer = steer(localAngle)
+    if localDistance > 1250:
+        controller_state.throttle = 1
+    elif localDistance > 500:
+        controller_state.throttle = .2
+    else:
+        controller_state.throttle = 0
+    return controller_state
+
+
 ''' FLIP ATTACK STATE '''
-class flipAttack:
+class centerAttack:
     def __init__(self):
         self.expired = False
     def available(self, agent):
@@ -65,23 +98,46 @@ class flipAttack:
             return True
         return False
     def execute(self, agent):
-        agent.controller = flipAttackController
-        if teamify(agent.ball.location.data[1], agent) < 200:
+        agent.controller = centerAttackController
+        if abs(agent.ball.location.data[0]) < 4120 and abs(agent.ball.location.data[0]) > 2400 and agent.ball.location.data[1] > teamify(2000, agent):
+            cornerCondition = True
+        else:
+            cornerCondition = False
+        if teamify(agent.ball.location.data[1], agent) < 200 or cornerCondition == True:
             self.expired = True
         return agent.controller(agent)
 
-def flipAttackController(agent):
+def centerAttackController(agent):
     controller_state = SimpleControllerState()
-    localBall = toLocal(agent.ball, agent.me)
-    localAngle = math.atan2(localBall.data[1], localBall.data[0])
+    prediction_slice60 = agent.ball.ball_prediction.slices[60]
+    prediction_slice20 = agent.ball.ball_prediction.slices[20]
+    location60 = prediction_slice60.physics.location
+    location20 = prediction_slice20.physics.location
+    localBall = toLocal(Vector3([location60.x,location60.y,location60.z]), agent.me)
     localDistance = math.sqrt((localBall.data[0])**2+(localBall.data[1])**2)
-    controller_state.throttle = abs(abs(localAngle/math.pi)-1)
-    controller_state.steer = steer(localAngle)
-    if localAngle <= 30 and localDistance >= 2000:
-        controller_state.throttle = 1
+    if localDistance < 1000:
+        localBall = toLocal(Vector3([location20.x,location20.y,location20.z]), agent.me)
+    localAngle = math.atan2(localBall.data[1], localBall.data[0])
+    controller_state.throttle = 1 # abs(abs(localAngle/math.pi)-1)
+    if teamify(agent.ball.location.data[1], agent) > teamify(agent.me.location.data[1], agent):
+        controller_state.steer = steer(localAngle)
+        if localDistance < 500:
+            if localAngle <= .3 and -.3 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+            elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT)
+            elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.LEFT)
+            elif localAngle <= 1.14 and .3 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT)
+            elif localAngle <= -.3 and -1.14 <= localAngle:
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT)
+    else:
+        controller_state = retreatController(agent, Vector3([0,teamify(-4500, agent),0]))
+    if localDistance > 2000:
         controller_state.boost = 1
-    if localAngle <= math.pi/2 and -math.pi/2 <= localAngle:
-        controller_state = flipCar(agent, controller_state, chooseflip(localAngle))
+    else:
+        controller_state.boost = 0
     return controller_state
 
 
@@ -95,7 +151,7 @@ class defensiveCorner:
         return False
     def execute(self, agent):
         agent.controller = defensiveCornerController
-        if abs(agent.ball.location.data[0]) > 4120 and abs(agent.ball.location.data[0]) < 1300 and agent.ball.location.data[1] > teamify(-2250, agent):
+        if abs(agent.ball.location.data[0]) < 1300 or agent.ball.location.data[1] > teamify(-2250, agent):
             self.expired = True
         return agent.controller(agent)
 
