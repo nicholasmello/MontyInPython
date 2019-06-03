@@ -70,7 +70,9 @@ class offensiveCorner:
             midField = Vector3([2000,teamify(200, agent),0])
         else:
             midField = Vector3([-2000,teamify(200, agent),0])
-        if abs(agent.ball.location.data[0]) < 2000 or agent.ball.location.data[1] > teamify(2250, agent):
+        prediction_slice60 = agent.ball.ball_prediction.slices[60]
+        location60 = prediction_slice60.physics.location
+        if abs(location60.x) < 2000 or location60.y < teamify(2250, agent):
             self.expired = True
         return agent.controller(agent, midField)
 
