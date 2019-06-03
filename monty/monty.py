@@ -97,11 +97,3 @@ class Monty(BaseAgent):
                         break
                 if not flag:
                     self.players.append(temp)
-
-                
-
-            
-                
-
-                
-
