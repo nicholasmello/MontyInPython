@@ -20,15 +20,42 @@ class kickoff:
         
 def kickoffController(agent):
     controller_state = SimpleControllerState()
+    global KICKOFFOFFSET
     localBall = toLocal(agent.ball, agent.me)
     localDistance = math.sqrt((localBall.data[0])**2+(localBall.data[1])**2)
-    controller_state.throttle = 1 # <-- Drive Forward.
-    controller_state.boost = 1
-    localAngle = math.atan2(localBall.data[1], localBall.data[0])
-    controller_state.steer = steer(localAngle) 
-    if localDistance < 900:
+    controller_state.throttle = 1
+    if agent.me.istouching:
+        controller_state.boost = 1
+    else:
         controller_state.boost = 0
-        controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+    localAngle = math.atan2(localBall.data[1], localBall.data[0])
+    if KICKOFFOFFSET == "Close":
+        controller_state.boost = 1
+        controller_state.throttle = 1
+        if localDistance < 1350:
+            controller_state.steer = steer(localAngle)/1.5
+        if localDistance < 750:
+            controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1)
+    elif KICKOFFOFFSET == "Far":
+        if localDistance < 1100:
+            controller_state.steer = steer(localAngle)
+            controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1.3)
+        elif localDistance < 3750:
+            controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1.3)
+        elif localDistance > 3750:
+            controller_state.steer = steer(localAngle)
+    else:
+        if localDistance < 1100:
+            controller_state.steer = steer(localAngle)
+            controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1.5)
+        elif localDistance < 3500:
+            controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1.5)
+        elif localDistance > 3500:
+            controller_state.steer = steer(localAngle)
+    if round(localDistance) == 3278 and agent.me.isRoundActive == False:
+        KICKOFFOFFSET = "Close"
+    elif localDistance > 3900 and agent.me.isRoundActive == False:
+        KICKOFFOFFSET = "Far"
     return controller_state
 
 
@@ -122,15 +149,15 @@ def centerAttackController(agent):
         controller_state.steer = steer(localAngle)
         if localDistance < 500:
             if localAngle <= .3 and -.3 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 2)
             elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT)
+                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT, 2)
             elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.LEFT)
+                controller_state = flipCar(agent, controller_state, flipDirection.LEFT, 2)
             elif localAngle <= 1.14 and .3 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT)
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT, 2)
             elif localAngle <= -.3 and -1.14 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT)
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT, 2)
     else:
         controller_state = retreatController(agent, Vector3([0,teamify(-4500, agent),0]))
     if localDistance > 2000:
@@ -171,15 +198,15 @@ def defensiveCornerController(agent):
         controller_state.steer = steer(localAngle)
         if localDistance < 500:
             if localAngle <= .3 and -.3 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD)
+                controller_state = flipCar(agent, controller_state, flipDirection.FORWARD, 1)
             elif localAngle <= (math.pi / 2) and 1.14 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT)
+                controller_state = flipCar(agent, controller_state, flipDirection.RIGHT, 1)
             elif localAngle <= -1.14 and -(math.pi / 2) <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.LEFT)
+                controller_state = flipCar(agent, controller_state, flipDirection.LEFT, 1)
             elif localAngle <= 1.14 and .3 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT)
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_RIGHT, 1)
             elif localAngle <= -.3 and -1.14 <= localAngle:
-                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT)
+                controller_state = flipCar(agent, controller_state, flipDirection.FRONT_LEFT, 1)
     else:
         controller_state = retreatController(agent, Vector3([0,teamify(-4500, agent),0]))
     return controller_state

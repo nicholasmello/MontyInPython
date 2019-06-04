@@ -9,6 +9,7 @@ FIELD_WIDTH = 8240
 CURRENT_STATE = "Unset"
 FLIP_CAR_CALLED = False
 FLIP_CAR_START = 0
+KICKOFFOFFSET = "Middle"
 
 boosts = [
     [3584, 0,0],
@@ -175,8 +176,10 @@ def changeBotState(new):
 def resetGlobalVariables():
     global FLIP_CAR_CALLED
     global FLIP_CAR_START
+    global KICKOFFOFFSET
     FLIP_CAR_CALLED = False
     FLIP_CAR_START = 0
+    KICKOFFOFFSET = "Middle"
 
 class flipDirection(Enum):
     DOUBLE_JUMP = auto()
@@ -219,7 +222,7 @@ class flipDirection(Enum):
             controller_state.yaw = -1
         return controller_state
         
-def flipCar(agent, controller_state, direction):
+def flipCar(agent, controller_state, direction, cooldown):
     global FLIP_CAR_CALLED
     global FLIP_CAR_START
     if FLIP_CAR_CALLED == False:
@@ -227,7 +230,7 @@ def flipCar(agent, controller_state, direction):
     FLIP_CAR_CALLED = True
     diff = (time.time() - agent.start) - FLIP_CAR_START
 
-    if direction.name == "HALFFLIP":
+    if direction == "HALFFLIP":
         if diff <= 0.1:
             controller_state.jump = True
             controller_state.pitch = 1
@@ -242,7 +245,7 @@ def flipCar(agent, controller_state, direction):
         elif diff > 0.35 and diff < .7:
             controller_state.pitch = -1
         elif diff > .7 and diff < 2:
-        controller_state.pitch = -1
+            controller_state.pitch = -1
             if agent.me.rotation.data[2] > .1:
                 controller_state.roll = -1
             if agent.me.rotation.data[2] < -.1:
@@ -251,14 +254,16 @@ def flipCar(agent, controller_state, direction):
             FLIP_CAR_CALLED = False
         controller_state.yaw = 0
     else:
-        if diff <= 0.1:
+        if diff <= 0.07:
             controller_state.jump = True
-        elif diff >= 0.1 and diff <= 0.15:
+        elif diff >= 0.07 and diff <= 0.11:
             controller_state.jump = False
             controller_state.boost = 0
-        elif diff > 0.15 and diff < 1:
+        elif diff > 0.11 and diff < .35:
             controller_state.jump = True
             controller_state.boost = 0
+        elif diff > 0.35 and diff < cooldown:
+            controller_state.jump = True
         else:
             FLIP_CAR_CALLED = False
         controller_state = direction.flipd(controller_state)
