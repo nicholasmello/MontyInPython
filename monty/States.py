@@ -91,7 +91,7 @@ def offensiveCornerController(agent, mid):
     return controller_state
 
 
-''' FLIP ATTACK STATE '''
+''' CENTER ATTACK STATE '''
 class centerAttack:
     def __init__(self):
         self.expired = False
@@ -111,14 +111,11 @@ class centerAttack:
 
 def centerAttackController(agent):
     controller_state = SimpleControllerState()
-    prediction_slice60 = agent.ball.ball_prediction.slices[60]
-    prediction_slice20 = agent.ball.ball_prediction.slices[20]
-    location60 = prediction_slice60.physics.location
-    location20 = prediction_slice20.physics.location
-    localBall = toLocal(Vector3([location60.x,location60.y,location60.z]), agent.me)
+    velocityMagnitude = math.sqrt(agent.ball.velocity.data[0]**2+agent.ball.velocity.data[1]**2)
+    prediction_slice = agent.ball.ball_prediction.slices[int(round(velocityMagnitude/100))]
+    location = prediction_slice.physics.location
+    localBall = toLocal(Vector3([location.x,location.y,location.z]), agent.me)
     localDistance = math.sqrt((localBall.data[0])**2+(localBall.data[1])**2)
-    if localDistance < 1000:
-        localBall = toLocal(Vector3([location20.x,location20.y,location20.z]), agent.me)
     localAngle = math.atan2(localBall.data[1], localBall.data[0])
     controller_state.throttle = 1 # abs(abs(localAngle/math.pi)-1)
     if teamify(agent.ball.location.data[1], agent) > teamify(agent.me.location.data[1], agent):
@@ -230,8 +227,8 @@ class towardball:
         return agent.controller(agent, speed)
 
 def towardballController(agent, target_speed):
-    location = toLocal(agent.ball,agent.me)
     controller_state = SimpleControllerState()
+    location = toLocal(agent.ball,agent.me)
     current_speed = velocity2D(agent.me)
     localAngle = math.atan2(location.data[1],location.data[0])
     controller_state.steer = steer(localAngle)
@@ -268,3 +265,50 @@ class wait():
         print("Error: All states bypassed to wait state.")
         self.expired = True
         return controller_state
+
+
+class testingState:
+    def __init__(self):
+        self.expired = False
+    def available(self, agent):
+        return True
+    def execute(self, agent):
+        agent.controller = testingStateController
+        changeBotState("Error: Testing State Triggered")
+        # Testing Half Flip Ability
+        return agent.controller(agent)
+
+def testingStateController(agent):
+    controller_state = SimpleControllerState()
+    #controller_state = retreatController(agent, Vector3([0,0,0]))
+    global FLIP_CAR_CALLED
+    global FLIP_CAR_START
+    if FLIP_CAR_CALLED == False:
+        FLIP_CAR_START = time.time() - agent.start
+    FLIP_CAR_CALLED = True
+    diff = (time.time() - agent.start) - FLIP_CAR_START
+
+    if diff <= 0.1:
+        controller_state.jump = True
+        controller_state.pitch = 1
+    elif diff >= 0.1 and diff <= 0.15:
+        controller_state.jump = False
+        controller_state.boost = 0
+        controller_state.pitch = 1
+    elif diff > 0.15 and diff < 0.35:
+        controller_state.jump = True
+        controller_state.boost = 0
+        controller_state.pitch = 1
+    elif diff > 0.35 and diff < .7:
+        controller_state.pitch = -1
+    elif diff > .7 and diff < 2:
+        controller_state.pitch = -1
+        if agent.me.rotation.data[2] > .1:
+            controller_state.roll = -1
+        if agent.me.rotation.data[2] < -.1:
+            controller_state.roll = 1
+    else:
+        FLIP_CAR_CALLED = False
+    controller_state.yaw = 0
+    #controller_state.throttle = 1
+    return controller_state

@@ -23,6 +23,7 @@ class Monty(BaseAgent):
     def checkState(self):
         if self.state.expired:
             resetGlobalVariables()
+            #self.state = testingState()
             if kickoff().available(self) == True:
                 self.state = kickoff()
                 changeBotState("Kickoff")

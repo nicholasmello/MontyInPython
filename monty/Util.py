@@ -188,6 +188,7 @@ class flipDirection(Enum):
     FRONT_LEFT = auto()
     BACK_RIGHT = auto()
     BACK_LEFT = auto()
+    HALFFLIP = auto()
     def flipd(self, controller_state):
         if self.name == "DOUBLE_JUMP":
             controller_state.pitch = 0
@@ -226,17 +227,41 @@ def flipCar(agent, controller_state, direction):
     FLIP_CAR_CALLED = True
     diff = (time.time() - agent.start) - FLIP_CAR_START
 
-    if diff <= 0.1:
-        controller_state.jump = True
-    elif diff >= 0.1 and diff <= 0.15:
-        controller_state.jump = False
-        controller_state.boost = 0
-    elif diff > 0.15 and diff < 1:
-        controller_state.jump = True
-        controller_state.boost = 0
+    if direction.name == "HALFFLIP":
+        if diff <= 0.1:
+            controller_state.jump = True
+            controller_state.pitch = 1
+        elif diff >= 0.1 and diff <= 0.15:
+            controller_state.jump = False
+            controller_state.boost = 0
+            controller_state.pitch = 1
+        elif diff > 0.15 and diff < 0.35:
+            controller_state.jump = True
+            controller_state.boost = 0
+            controller_state.pitch = 1
+        elif diff > 0.35 and diff < .7:
+            controller_state.pitch = -1
+        elif diff > .7 and diff < 2:
+        controller_state.pitch = -1
+            if agent.me.rotation.data[2] > .1:
+                controller_state.roll = -1
+            if agent.me.rotation.data[2] < -.1:
+                controller_state.roll = 1
+        else:
+            FLIP_CAR_CALLED = False
+        controller_state.yaw = 0
     else:
-        FLIP_CAR_CALLED = False
-    controller_state = direction.flipd(controller_state)
+        if diff <= 0.1:
+            controller_state.jump = True
+        elif diff >= 0.1 and diff <= 0.15:
+            controller_state.jump = False
+            controller_state.boost = 0
+        elif diff > 0.15 and diff < 1:
+            controller_state.jump = True
+            controller_state.boost = 0
+        else:
+            FLIP_CAR_CALLED = False
+        controller_state = direction.flipd(controller_state)
     #print(str(diff) + " " + str(controller_state.jump) + " " + str(controller_state.pitch) + " " + str(controller_state.yaw))
     return controller_state
 
