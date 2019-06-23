@@ -1,6 +1,8 @@
 # Monty In Python
 Monty is a Rocket league bot created in Python. The team communicates using our own discord server, so if you are interested in being a tester you can go over there and come help.
 
+As awesome as the  development of Monty is, my focus is on my rust bot [Evan](https://github.com/xonmello/rlbot-evan). If you are looking for a bot that will likely be competitng or just a bot that is actively being developed, go check him out.
+
 ### Discord Link
 https://discord.gg/pC5Dmqg
 
